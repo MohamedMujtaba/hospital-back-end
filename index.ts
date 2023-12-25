@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import http from "http";
+import { prisma } from "./src/utils/prisma";
 
 const app = express();
 const server = http.createServer(app);

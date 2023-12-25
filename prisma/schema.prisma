@@ -47,6 +47,7 @@ model Doctor {
   name             String
   phoneNumber      String
   password         String
+  acupation        String
   appointmentPrice Int
 }
 
@@ -61,4 +62,34 @@ enum WorkerRole {
   REG
   LAB
   ADMIN
+}
+
+// pharmacy
+
+model Medicine {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  quantity    Int
+}
+
+model Prescription {
+  id         Int      @id @default(autoincrement())
+  medicineId Int
+  patient    String
+  doctor     String
+  date       DateTime @default(now())
+
+  medicines PrescriptionMedicine[]
+}
+
+model PrescriptionMedicine {
+  id             Int           @id @default(autoincrement())
+  name           String
+  description    String
+  price          Int
+  quantity       Int
+  Prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+  prescriptionId Int?
 }
