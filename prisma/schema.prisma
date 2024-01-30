@@ -35,27 +35,46 @@ model Patient {
   gander      Gander
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
 
-enum Gander {
-  MALE
-  FEMALE
+  appointments Appointment[]
 }
 
 model Doctor {
-  id               String @id @default(cuid())
-  name             String
-  phoneNumber      String
-  password         String
-  acupation        String
-  appointmentPrice Int
+  id                  String               @id @default(cuid())
+  name                String
+  phoneNumber         String
+  password            String
+  specialization      DoctorSpecialization
+  appointmentPrice    Int
+  workingDays         Weekday[]
+  preferences         DoctorPreferences    @relation(fields: [doctorPreferencesId], references: [id])
+  doctorPreferencesId String               @unique
+
+  appointments Appointment[]
+}
+
+model DoctorPreferences {
+  id     String  @id @default(cuid())
+  Doctor Doctor?
+
+  SUNDAY    Boolean @default(false)
+  MONDAY    Boolean @default(false)
+  TUESDAY   Boolean @default(false)
+  WEDNESDAY Boolean @default(false)
+  THURSDAY  Boolean @default(false)
+  FRIDAY    Boolean @default(false)
+  SATURDAY  Boolean @default(false)
 }
 
 model Worker {
-  id       String     @id @default(cuid())
-  name     String
-  password String
-  role     WorkerRole
+  id          String     @id @default(cuid())
+  name        String
+  phoneNumber String
+  password    String
+  role        WorkerRole
+  verified    Boolean    @default(false)
+
+  token WorkerToken?
 }
 
 enum WorkerRole {
@@ -64,14 +83,32 @@ enum WorkerRole {
   ADMIN
 }
 
+model WorkerToken {
+  id           String  @id @default(cuid())
+  refreshToken String
+  isValid      Boolean @default(true)
+  worker       Worker  @relation(fields: [workerId], references: [id])
+  workerId     String  @unique
+}
+
+model Appointment {
+  id  Int     @id @default(autoincrement())
+  day Weekday
+
+  patientId String?
+  Patient   Patient? @relation(fields: [patientId], references: [id])
+  doctorId  String?
+  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
+}
+
 // pharmacy
 
 model Medicine {
-  id          Int    @id @default(autoincrement())
+  id          String @id @default(cuid())
   name        String
   description String
   price       Float
-  quantity    Int
+  stock       Int
 }
 
 model Prescription {
@@ -85,11 +122,126 @@ model Prescription {
 }
 
 model PrescriptionMedicine {
-  id             Int           @id @default(autoincrement())
+  id             String        @id @default(cuid())
   name           String
-  description    String
+  description    String?
   price          Int
   quantity       Int
   Prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
   prescriptionId Int?
 }
+
+// Constants 
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum Gander {
+  MALE
+  FEMALE
+}
+
+model PatientCounter {
+  id    Int @id @default(autoincrement())
+  value Int
+}
+
+enum DoctorSpecialization {
+  GENERAL_MEDICINE
+  PEDIATRICS
+  CARDIOLOGY
+  DERMATOLOGY
+  ORTHOPEDICS
+  NEUROLOGY
+  GASTROENTEROLOGY
+  ENDOCRINOLOGY
+  NEPHROLOGY
+  PULMONOLOGY
+  OPHTHALMOLOGY
+  ENT
+  UROLOGY
+  OBSTETRICS_AND_GYNECOLOGY
+  ONCOLOGY
+  RADIOLOGY
+  PSYCHIATRY
+  ANESTHESIOLOGY
+  RHEUMATOLOGY
+  HEMATOLOGY
+  INFECTIOUS_DISEASES
+  ALLERGY_AND_IMMUNOLOGY
+  PHYSICAL_MEDICINE_AND_REHABILITATION
+  EMERGENCY_MEDICINE
+  FAMILY_MEDICINE
+  GERIATRICS
+  NUCLEAR_MEDICINE
+  PATHOLOGY
+  PLASTIC_SURGERY
+  CARDIOTHORACIC_SURGERY
+  COLORECTAL_SURGERY
+  HAND_SURGERY
+  PEDIATRIC_SURGERY
+  TRANSPLANT_SURGERY
+  VASCULAR_SURGERY
+  NEONATOLOGY
+  PAIN_MEDICINE
+  SLEEP_MEDICINE
+  SPORTS_MEDICINE
+  CRITICAL_CARE_MEDICINE
+  REPRODUCTIVE_ENDOCRINOLOGY_AND_INFERTILITY
+  MEDICAL_GENETICS
+  PALLIATIVE_MEDICINE
+  AEROSPACE_MEDICINE
+}
+
+// enum SpecializationArabic {
+//   الطب_العام
+//   طب_الأطفال
+//   القلبية
+//   طب_الجلدية
+//   العظام
+//   الأعصاب
+//   الجهاز_الهضمي
+//   الغدد_الصماء
+//   الكلى
+//   أمراض_الجهاز_التنفسي
+//   العيون
+//   أنف_وأذن_وحنجرة
+//   الجهاز_البولي
+//   نساء_وتوليد
+//   أمراض_الأورام
+//   الأشعة
+//   الطب_النفسي
+//   التخدير
+//   الروماتولوجيا
+//   أمراض_الدم
+//   الأمراض_المعدية
+//   الحساسية_والمناعة
+//   الطب_الطبيعي_وإعادة_التأهيل
+//   الطوارئ
+//   طب_العائلة
+//   جراحة_العظام
+//   الطب_للكبار
+//   الطب_النووي
+//   علم_الأمراض
+//   جراحة_التجميل
+//   جراحة_القلب_والصدر
+//   جراحة_القولون_والمستقيم
+//   جراحة_اليد
+//   جراحة_الأطفال
+//   جراحة_زرع_الأعضاء
+//   جراحة_الأوعية_الدموية
+//   طب_الأطفال_المبتسرين
+//   طب_الألم
+//   طب_النوم
+//   الطب_الرياضي
+//   طب_الرعاية_الحرجة
+//   طب_تناسلي
+//   الوراثة_الطبية
+//   الطب_التخدير_للطيران
+// }

@@ -7,6 +7,7 @@ import {
 } from "../types/patient.type";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../utils/prisma";
+import { createPatientId } from "../utils/create-patient-id";
 
 export const createPatient = async (req: CreatePatientReq, res: Response) => {
   const { name, age, gander, phoneNumber } = req.body;
@@ -21,12 +22,14 @@ export const createPatient = async (req: CreatePatientReq, res: Response) => {
       });
       return;
     }
+    const id = await createPatientId();
     const newPatient = await prisma.patient.create({
       data: {
+        id,
         name,
         age,
         gander,
-        phoneNumber,
+        phoneNumber: phoneNumber || "",
       },
     });
     res.status(StatusCodes.OK).json({
@@ -35,6 +38,8 @@ export const createPatient = async (req: CreatePatientReq, res: Response) => {
       data: newPatient,
     });
   } catch (error) {
+    console.log(error);
+
     res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
       msg: "Something went wrong",
@@ -82,6 +87,7 @@ export const getPatient = async (req: GetPatientReq, res: Response) => {
       where: {
         id,
       },
+      include: {},
     });
     res.status(StatusCodes.OK).json({
       success: true,
@@ -101,8 +107,8 @@ export const getPatients = async (req: GetPatientsReq, res: Response) => {
   const { skip, take } = req.query;
   try {
     const patients = await prisma.patient.findMany({
-      take: Number(take),
-      skip: Number(skip),
+      take: Number(take) || 100,
+      skip: Number(skip) || 0,
     });
     res.status(StatusCodes.OK).json({
       success: true,
@@ -110,6 +116,8 @@ export const getPatients = async (req: GetPatientsReq, res: Response) => {
       data: patients,
     });
   } catch (error) {
+    console.log(error);
+
     res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
       msg: "Something went wrong",
